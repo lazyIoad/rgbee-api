@@ -20,7 +20,9 @@
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix && prettier --write src/",
     "debug": "yarn build && yarn watch-debug",
     "serve-debug": "nodemon --inspect dist/server.js",
-    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\""
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\"",
+    "db:migrate:latest": "knex migrate:latest",
+    "db:migrate:rollback": "knex migrate:rollback"
   },
   "dependencies": {
     "@koa/cors": "^3.0.0",
