@@ -1,0 +1,20 @@
+import * as Knex from 'knex';
+
+export async function up(knex: Knex): Promise<void> {
+  const createCommentsTableQuery = `CREATE TABLE comments (
+    id               BIGSERIAL PRIMARY KEY NOT NULL,
+    parent_id        BIGINT,
+    text             TEXT NOT NULL,
+    upvotes          INTEGER DEFAULT 0 CHECK (upvotes >= 0),
+    downvotes        INTEGER DEFAULT 0 CHECK (downvotes >= 0),
+    created_at       TIMESTAMPTZ DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ DEFAULT NOW()
+  )`;
+
+  return knex.raw(createCommentsTableQuery);
+}
+
+export async function down(knex: Knex): Promise<void> {
+  const dropCommentsTableQuery = `DROP TABLE comments`;
+  return knex.raw(dropCommentsTableQuery);
+}
