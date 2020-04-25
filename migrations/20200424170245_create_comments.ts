@@ -4,6 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   const createCommentsTableQuery = `CREATE TABLE comments (
     id               BIGSERIAL PRIMARY KEY NOT NULL,
     parent_id        BIGINT,
+    user_id          BIGSERIAL NOT NULL REFERENCES users(id),
     text             TEXT NOT NULL,
     upvotes          INTEGER DEFAULT 0 CHECK (upvotes >= 0),
     downvotes        INTEGER DEFAULT 0 CHECK (downvotes >= 0),

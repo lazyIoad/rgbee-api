@@ -1,15 +1,21 @@
 import { Context } from 'koa';
-import argon2 from 'argon2';
 import User from '../models/user-model';
 
 export const post = async (ctx: Context): Promise<void> => {
-  const { password } = ctx.request.body;
+  const { email, username, password, about } = ctx.request.body;
 
+  let hashedPassword;
   if (password) {
-    ctx.request.body.password = await argon2.hash(password, { type: argon2.argon2i });
+    hashedPassword = await User.hashPassword(password);
   }
 
-  const user = await User.query().insert(ctx.request.body);
+  const user = await User.query().insert({
+    email,
+    username,
+    about,
+    password: hashedPassword,
+  });
+
   ctx.body = user;
 };
 
