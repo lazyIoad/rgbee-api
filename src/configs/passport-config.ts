@@ -20,7 +20,7 @@ passport.deserializeUser((id: number, done): void => {
 passport.use(
   new LocalStrategy((username, password, done) => {
     User.query()
-      .findOne({ username: username.toLowerCase().trim() })
+      .findOne({ username: username.trim() })
       .then(async (user) => {
         if (!user) {
           return done(null, false);

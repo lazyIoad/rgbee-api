@@ -7,7 +7,8 @@ import session from 'koa-session';
 import passport from 'koa-passport';
 import { Model } from 'objection';
 import './configs/passport-config';
-import userRouter from './routes/users-router';
+import authRouter from './routes/auth-router';
+import storiesRouter from './routes/stories-router';
 import errorHandler from './helpers/error-helper';
 import { loggerStream } from './helpers/logger-helper';
 import { SESSION_SECRET } from './utils/secrets-util';
@@ -21,10 +22,14 @@ Model.knex(knex);
 
 const app = new Koa();
 
+// Session store
 app.keys = [SESSION_SECRET || 'very secret'];
 app.use(session(app));
 
+// Security
 app.use(helmet());
+
+// Utils
 app.use(bodyParser());
 
 // Logging
@@ -38,6 +43,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.use(userRouter);
+app.use(authRouter);
+app.use(storiesRouter);
 
 export default app;
