@@ -6,8 +6,8 @@ export async function up(knex: Knex): Promise<void> {
     title            TEXT NOT NULL CHECK (CHAR_LENGTH(title) <= 100),
     url              TEXT CHECK (CHAR_LENGTH(url) <= 2000),
     text             TEXT,
-    upvotes          INTEGER NOT NULL DEFAULT 0 CHECK (upvotes >= 0),
-    downvotes        INTEGER NOT NULL DEFAULT 0 CHECK (downvotes >= 0),
+    num_upvotes      INTEGER NOT NULL DEFAULT 0 CHECK (num_upvotes >= 0),
+    num_downvotes    INTEGER NOT NULL DEFAULT 0 CHECK (num_downvotes >= 0),
     num_comments     INTEGER NOT NULL DEFAULT 0 CHECK (num_comments >= 0),
     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
