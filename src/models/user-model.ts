@@ -1,5 +1,5 @@
 import argon2 from 'argon2';
-import { Model } from 'objection';
+import { Model, JSONSchema } from 'objection';
 
 export default class User extends Model {
   id!: number;
@@ -26,7 +26,7 @@ export default class User extends Model {
     return 'users';
   }
 
-  static get jsonSchema(): object {
+  static get jsonSchema(): JSONSchema {
     return {
       type: 'object',
       required: ['email', 'username', 'password'],

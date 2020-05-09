@@ -1,29 +1,23 @@
 import { Context, Next } from 'koa';
 import passport from 'koa-passport';
-import { NotFoundError } from 'objection';
+import { DataError } from 'objection';
+import { UnauthorizedError } from '../helpers/error-helper';
 import User from '../models/user-model';
 
 const handleLogin = (ctx: Context, next: Next): Promise<void> => {
   return passport.authenticate('local', (err, user) => {
     if (user) {
       ctx.login(user);
-      ctx.redirect('/auth/status');
+      ctx.status = 200;
     } else if (err) {
-      ctx.body = {
-        message: err.message,
-        type: err.type,
-        data: {},
-      };
-
-      ctx.throw(400);
+      throw new DataError();
     } else {
-      // TODO: fix this error
-      throw new NotFoundError('Incorrect username or password');
+      throw new UnauthorizedError('Incorrect username or password');
     }
   })(ctx, next);
 };
 
-export const postRegister = async (ctx: Context, next: Next): Promise<void> => {
+export const postRegister = async (ctx: Context): Promise<void> => {
   const { email, username, password } = ctx.request.body;
 
   let hashedPassword;
@@ -37,7 +31,7 @@ export const postRegister = async (ctx: Context, next: Next): Promise<void> => {
     password: hashedPassword,
   });
 
-  return handleLogin(ctx, next);
+  ctx.status = 200;
 };
 
 export const postLogin = (ctx: Context, next: Next): Promise<void> => {
@@ -46,5 +40,5 @@ export const postLogin = (ctx: Context, next: Next): Promise<void> => {
 
 export const postLogout = (ctx: Context): void => {
   ctx.logout();
-  ctx.redirect('/auth/status');
+  ctx.status = 200;
 };

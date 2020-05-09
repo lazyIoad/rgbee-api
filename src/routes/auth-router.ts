@@ -3,7 +3,7 @@ import { DefaultState, Context } from 'koa';
 import { postRegister, postLogin, postLogout } from '../controllers/auth-controller';
 
 const router = new Router<DefaultState, Context>({
-  prefix: '/auth',
+  prefix: '/api/v1/auth',
 });
 
 router.post('/register', postRegister);

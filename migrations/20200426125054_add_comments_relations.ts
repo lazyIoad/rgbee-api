@@ -2,8 +2,9 @@ import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const addCommentsRelationsQuery = `ALTER TABLE comments
-    ADD COLUMN author_id  BIGINT REFERENCES users(id),
-    ADD COLUMN story_id   BIGINT REFERENCES stories(id)
+    ADD COLUMN author_id  BIGINT REFERENCES users(id) NOT NULL,
+    ADD COLUMN story_id   BIGINT REFERENCES stories(id) NOT NULL,
+    ADD COLUMN parent_id  BIGINT REFERENCES comments(id)
   ;`;
 
   return knex.raw(addCommentsRelationsQuery);

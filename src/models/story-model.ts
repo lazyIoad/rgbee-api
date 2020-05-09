@@ -1,4 +1,4 @@
-import { Model } from 'objection';
+import { Model, JSONSchema, RelationMappings } from 'objection';
 import Comment from './comment-model';
 import User from './user-model';
 
@@ -21,7 +21,7 @@ export default class Story extends Model {
     return 'stories';
   }
 
-  static get jsonSchema(): object {
+  static get jsonSchema(): JSONSchema {
     return {
       type: 'object',
       required: ['title'],
@@ -38,22 +38,24 @@ export default class Story extends Model {
     };
   }
 
-  static relationMappings = {
-    author: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: User,
-      join: {
-        from: 'stories.authorId',
-        to: 'users.id',
+  static get relationMappings(): RelationMappings {
+    return {
+      author: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: User,
+        join: {
+          from: 'stories.authorId',
+          to: 'users.id',
+        },
       },
-    },
-    thread: {
-      relation: Model.HasOneRelation,
-      modelClass: Comment,
-      join: {
-        from: 'stories.id',
-        to: 'comments.storyId',
+      thread: {
+        relation: Model.HasOneRelation,
+        modelClass: Comment,
+        join: {
+          to: 'comments.storyId',
+          from: 'stories.id',
+        },
       },
-    },
-  };
+    };
+  }
 }

@@ -1,13 +1,28 @@
 import Router from 'koa-router';
 import { DefaultState, Context } from 'koa';
 import authenticated from '../utils/auth-util';
-import { getById, post } from '../controllers/stories-controller';
+import { getStoryById, postCreateStory } from '../controllers/stories-controller';
+import {
+  getStoryComments,
+  getCommentById,
+  postCreateComment,
+  postCreateSubComment,
+  postUpvoteComment,
+  postDownvoteComment,
+} from '../controllers/comments-controller';
 
 const router = new Router<DefaultState, Context>({
   prefix: '/api/v1/stories',
 });
 
-router.post('/', authenticated(), post);
-router.get('/:id', getById);
+router.post('/', authenticated(), postCreateStory);
+router.get('/:storyId', getStoryById);
+
+router.get('/:storyId/comments', getStoryComments);
+router.post('/:storyId/comments', authenticated(), postCreateComment);
+router.get('/:storyId/comments/:commentId', authenticated(), getCommentById);
+router.post('/:storyId/comments/:commentId', authenticated(), postCreateSubComment);
+router.post('/:storyId/comments/:commentId/upvote', authenticated(), postUpvoteComment);
+router.post('/:storyId/comments/:commentId/downvote', authenticated(), postDownvoteComment);
 
 export default router.routes();
