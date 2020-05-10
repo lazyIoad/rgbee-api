@@ -8,6 +8,7 @@ import passport from 'koa-passport';
 import { Model } from 'objection';
 import './configs/passport-config';
 import authRouter from './routes/auth-router';
+import usersRouter from './routes/users-router';
 import storiesRouter from './routes/stories-router';
 import errorHandler from './helpers/error-helper';
 import { loggerStream } from './helpers/logger-helper';
@@ -44,6 +45,7 @@ app.use(passport.session());
 
 // Routes
 app.use(authRouter);
+app.use(usersRouter);
 app.use(storiesRouter);
 
 export default app;

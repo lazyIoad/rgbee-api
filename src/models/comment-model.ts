@@ -6,12 +6,15 @@ import {
   RelationMappings,
   ValidationError,
 } from 'objection';
+// eslint-disable-next-line import/no-cycle
 import User from './user-model';
+// eslint-disable-next-line import/no-cycle
+import Story from './story-model';
 
 export default class Comment extends Model {
   id!: number;
 
-  text?: string;
+  body?: string;
 
   authorId!: number;
 
@@ -23,7 +26,7 @@ export default class Comment extends Model {
 
   storyId!: number;
 
-  story!: './story-model';
+  story!: Story;
 
   children: Comment[];
 
@@ -36,7 +39,7 @@ export default class Comment extends Model {
       type: 'object',
 
       properties: {
-        text: { type: 'string', maxLength: 4000 },
+        body: { type: 'string', maxLength: 4000 },
       },
     };
   }
@@ -87,11 +90,12 @@ export default class Comment extends Model {
   }
 
   $beforeInsert(): void {
-    if (this.parentId && (!this.text || this.text.length <= 0)) {
+    // Validate body length if this comment isn't a story-thread.
+    if (this.parentId && (!this.body || this.body.length <= 0)) {
       throw new ValidationError({
         type: 'ModelValidation',
         data: {
-          text: [
+          body: [
             {
               message: 'is a required property',
             },

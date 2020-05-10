@@ -1,5 +1,7 @@
 import { Model, JSONSchema, RelationMappings } from 'objection';
+// eslint-disable-next-line import/no-cycle
 import Comment from './comment-model';
+// eslint-disable-next-line import/no-cycle
 import User from './user-model';
 
 export default class Story extends Model {
@@ -9,7 +11,7 @@ export default class Story extends Model {
 
   url?: string;
 
-  text?: string;
+  body?: string;
 
   authorId!: number;
 
@@ -33,7 +35,7 @@ export default class Story extends Model {
           maxLength: 2000,
           format: 'hostname',
         },
-        text: { type: 'string', maxLength: 4000 },
+        body: { type: 'string', maxLength: 4000 },
       },
     };
   }
