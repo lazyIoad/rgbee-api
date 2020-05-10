@@ -2,7 +2,7 @@ import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const addStoriesRelationsQuery = `ALTER TABLE stories
-    ADD COLUMN author_id BIGINT REFERENCES users(id)
+    ADD COLUMN author_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE
   ;`;
 
   return knex.raw(addStoriesRelationsQuery);

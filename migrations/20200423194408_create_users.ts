@@ -2,7 +2,7 @@ import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const createUsersTableQuery = `CREATE TABLE users (
-    id               BIGSERIAL PRIMARY KEY NOT NULL,
+    id               BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     email            TEXT UNIQUE NOT NULL CHECK (CHAR_LENGTH(email) <= 200),
     username         TEXT UNIQUE NOT NULL CHECK (CHAR_LENGTH(username) <= 20),
     password         TEXT NOT NULL,
