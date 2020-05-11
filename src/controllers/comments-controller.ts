@@ -2,6 +2,7 @@ import { Context } from 'koa';
 import Comment from '../models/comment-model';
 import User from '../models/user-model';
 import { BadRequestError } from '../helpers/error-helper';
+import Story from '../models/story-model';
 
 export const getCommentById = async (ctx: Context): Promise<void> => {
   const { commentId } = ctx.params;
@@ -25,11 +26,14 @@ const createComment = (
   authorId: number,
   parentId: number,
 ): Promise<Comment> => {
-  return Comment.query().insert({
-    body,
-    storyId,
-    authorId,
-    parentId,
+  return Comment.transaction(async (trx) => {
+    await Story.query(trx).findById(storyId).increment('numComments', 1);
+    return Comment.query(trx).insert({
+      body,
+      storyId,
+      authorId,
+      parentId,
+    });
   });
 };
 
@@ -115,7 +119,7 @@ export const postSaveComment = async (ctx: Context): Promise<void> => {
   const savedComments = User.relatedQuery('savedComments').for(ctx.state.user.id);
   const numModified = undo
     ? await savedComments.relate(commentId)
-    : await savedComments.unrelate().where('stories.id', commentId);
+    : await savedComments.unrelate().where('comments.id', commentId);
 
   ctx.body = numModified;
 };
