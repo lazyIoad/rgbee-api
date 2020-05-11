@@ -56,7 +56,7 @@ export const postUpvoteComment = async (ctx: Context): Promise<void> => {
     const upvotedComments = User.relatedQuery('upvotedComments', trx).for(ctx.state.user.id);
     const comment = Comment.query(trx).findById(commentId);
 
-    // Check if existing downvote for this story exists
+    // Check if existing downvote for this comment exists
     const downvote = await User.relatedQuery('downvotedComments', trx)
       .for(ctx.state.user.id)
       .where('comments.id', commentId)
@@ -86,7 +86,7 @@ export const postDownvoteComment = async (ctx: Context): Promise<void> => {
     const downvotedComments = User.relatedQuery('downvotedComments', trx).for(ctx.state.user.id);
     const comment = Comment.query(trx).findById(commentId);
 
-    // Check if existing upvote for this story exists
+    // Check if existing upvote for this comment exists
     const upvote = await User.relatedQuery('upvotedComments', trx)
       .for(ctx.state.user.id)
       .where('comments.id', commentId)
