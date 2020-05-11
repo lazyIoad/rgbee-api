@@ -1,6 +1,7 @@
 import { Context } from 'koa';
 import Comment from '../models/comment-model';
 import User from '../models/user-model';
+import { BadRequestError } from '../helpers/error-helper';
 
 export const getCommentById = async (ctx: Context): Promise<void> => {
   const { commentId } = ctx.params;
@@ -49,24 +50,72 @@ export const postCreateSubComment = async (ctx: Context): Promise<void> => {
 
 export const postUpvoteComment = async (ctx: Context): Promise<void> => {
   const { commentId } = ctx.params;
-  const comment = await Comment.transaction(async (trx) => {
-    await User.relatedQuery('upvotedComments', trx).for(ctx.state.user.id).relate(commentId);
-    return Comment.query(trx).findById(commentId).increment('numUpvotes', 1);
+  const { undo } = ctx.request.body;
+
+  const numModified = await Comment.transaction(async (trx) => {
+    const upvotedComments = User.relatedQuery('upvotedComments', trx).for(ctx.state.user.id);
+    const comment = Comment.query(trx).findById(commentId);
+
+    // Check if existing downvote for this story exists
+    const downvote = await User.relatedQuery('downvotedComments', trx)
+      .for(ctx.state.user.id)
+      .where('comments.id', commentId)
+      .select('id');
+
+    if (downvote.length) {
+      throw new BadRequestError();
+    }
+
+    if (undo) {
+      await upvotedComments.unrelate().where('comments.id', commentId);
+      return comment.decrement('numUpvotes', 1);
+    }
+
+    await upvotedComments.relate(commentId);
+    return comment.increment('numUpvotes', 1);
   });
-  ctx.body = comment;
+
+  ctx.body = numModified;
 };
 
 export const postDownvoteComment = async (ctx: Context): Promise<void> => {
   const { commentId } = ctx.params;
-  const comment = await Comment.transaction(async (trx) => {
-    await User.relatedQuery('downvotedComments').for(ctx.state.user.id).relate(commentId);
-    return Comment.query(trx).findById(commentId).increment('numDownvotes', 1);
+  const { undo } = ctx.request.body;
+
+  const numModified = await Comment.transaction(async (trx) => {
+    const downvotedComments = User.relatedQuery('downvotedComments', trx).for(ctx.state.user.id);
+    const comment = Comment.query(trx).findById(commentId);
+
+    // Check if existing upvote for this story exists
+    const upvote = await User.relatedQuery('upvotedComments', trx)
+      .for(ctx.state.user.id)
+      .where('comments.id', commentId)
+      .select('id');
+
+    if (upvote.length) {
+      throw new BadRequestError();
+    }
+
+    if (undo) {
+      await downvotedComments.unrelate().where('comments.id', commentId);
+      return comment.decrement('numDownvotes', 1);
+    }
+
+    await downvotedComments.relate(commentId);
+    return comment.increment('numDownvotes', 1);
   });
-  ctx.body = comment;
+
+  ctx.body = numModified;
 };
 
 export const postSaveComment = async (ctx: Context): Promise<void> => {
   const { commentId } = ctx.params;
-  const comment = await User.relatedQuery('savedComments').for(ctx.state.user.id).relate(commentId);
-  ctx.body = comment;
+  const { undo } = ctx.request.body;
+
+  const savedComments = User.relatedQuery('savedComments').for(ctx.state.user.id);
+  const numModified = undo
+    ? await savedComments.relate(commentId)
+    : await savedComments.unrelate().where('stories.id', commentId);
+
+  ctx.body = numModified;
 };

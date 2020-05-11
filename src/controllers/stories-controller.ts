@@ -1,6 +1,7 @@
 import { Context } from 'koa';
 import Story from '../models/story-model';
 import User from '../models/user-model';
+import { BadRequestError } from '../helpers/error-helper';
 
 export const postCreateStory = async (ctx: Context): Promise<void> => {
   const { title, url, body } = ctx.request.body;
@@ -28,24 +29,72 @@ export const getStoryById = async (ctx: Context): Promise<void> => {
 
 export const postUpvoteStory = async (ctx: Context): Promise<void> => {
   const { storyId } = ctx.params;
-  const story = await Story.transaction(async (trx) => {
-    await User.relatedQuery('upvotedStories', trx).for(ctx.state.user.id).relate(storyId);
-    return Story.query(trx).findById(storyId).increment('numUpvotes', 1);
+  const { undo } = ctx.request.body;
+
+  const numModified = await Story.transaction(async (trx) => {
+    const upvotedStories = User.relatedQuery('upvotedStories', trx).for(ctx.state.user.id);
+    const story = Story.query(trx).findById(storyId);
+
+    // Check if existing downvote for this story exists
+    const downvote = await User.relatedQuery('downvotedStories', trx)
+      .for(ctx.state.user.id)
+      .where('stories.id', storyId)
+      .select('id');
+
+    if (downvote.length) {
+      throw new BadRequestError();
+    }
+
+    if (undo) {
+      await upvotedStories.unrelate().where('stories.id', storyId);
+      return story.decrement('numUpvotes', 1);
+    }
+
+    await upvotedStories.relate(storyId);
+    return story.increment('numUpvotes', 1);
   });
-  ctx.body = story;
+
+  ctx.body = numModified;
 };
 
 export const postDownvoteStory = async (ctx: Context): Promise<void> => {
   const { storyId } = ctx.params;
-  const story = await Story.transaction(async (trx) => {
-    await User.relatedQuery('downvotedStories').for(ctx.state.user.id).relate(storyId);
-    return Story.query(trx).findById(storyId).increment('numDownvotes', 1);
+  const { undo } = ctx.request.body;
+
+  const numModified = await Story.transaction(async (trx) => {
+    const downvotedStories = User.relatedQuery('downvotedStories').for(ctx.state.user.id);
+    const story = Story.query(trx).findById(storyId);
+
+    // Check if existing upvote for this story exists
+    const upvote = await User.relatedQuery('upvotedStories', trx)
+      .for(ctx.state.user.id)
+      .where('stories.id', storyId)
+      .select('id');
+
+    if (upvote.length) {
+      throw new BadRequestError();
+    }
+
+    if (undo) {
+      await downvotedStories.unrelate().where('stories.id', storyId);
+      return story.decrement('numDownvotes', 1);
+    }
+
+    await downvotedStories.relate(storyId);
+    return story.increment('numDownvotes', 1);
   });
-  ctx.body = story;
+
+  ctx.body = numModified;
 };
 
 export const postSaveStory = async (ctx: Context): Promise<void> => {
   const { storyId } = ctx.params;
-  const story = await User.relatedQuery('savedStories').for(ctx.state.user.id).relate(storyId);
-  ctx.body = story;
+  const { undo } = ctx.request.body;
+
+  const savedStories = User.relatedQuery('savedStories').for(ctx.state.user.id);
+  const numModified = undo
+    ? await savedStories.relate(storyId)
+    : await savedStories.unrelate().where('stories.id', storyId);
+
+  ctx.body = numModified;
 };

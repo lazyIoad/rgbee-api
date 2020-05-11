@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import {
   ValidationError,
   NotFoundError,
@@ -12,6 +13,8 @@ import { Context, Next } from 'koa';
 import { logger } from './logger-helper';
 
 export class UnauthorizedError extends Error {}
+
+export class BadRequestError extends Error {}
 
 const getValidationErrors = (data: ErrorHash): { field: string; messages: string[] }[] => {
   return Object.entries(data).map(([field, errors]) => ({
@@ -48,7 +51,8 @@ const errorHelper = (err: Error, ctx: Context): void => {
     err instanceof NotNullViolationError ||
     err instanceof ForeignKeyViolationError ||
     err instanceof CheckViolationError ||
-    err instanceof DataError
+    err instanceof DataError ||
+    err instanceof BadRequestError
   ) {
     ctx.status = 400;
     ctx.body = {
