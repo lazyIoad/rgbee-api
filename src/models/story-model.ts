@@ -1,4 +1,4 @@
-import { Model, JSONSchema, RelationMappings } from 'objection';
+import { Model, JSONSchema, RelationMappings, Modifiers, AnyQueryBuilder } from 'objection';
 // eslint-disable-next-line import/no-cycle
 import Comment from './comment-model';
 // eslint-disable-next-line import/no-cycle
@@ -57,6 +57,16 @@ export default class Story extends Model {
           to: 'comments.storyId',
           from: 'stories.id',
         },
+      },
+    };
+  }
+
+  static get modifiers(): Modifiers {
+    return {
+      orderByPopularity(builder: AnyQueryBuilder): void {
+        builder.orderByRaw(
+          'popular_ranking(greatest(num_upvotes - num_downvotes - 1, 0), created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',
+        );
       },
     };
   }
