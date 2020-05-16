@@ -63,6 +63,10 @@ export default class Story extends Model {
 
   static get modifiers(): Modifiers {
     return {
+      orderByNew(builder: AnyQueryBuilder): void {
+        builder.orderByRaw('created_at DESC');
+      },
+
       orderByPopularity(builder: AnyQueryBuilder): void {
         builder.orderByRaw(
           'popular_ranking(greatest(num_upvotes - num_downvotes - 1, 0), created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',

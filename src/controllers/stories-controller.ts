@@ -3,6 +3,10 @@ import Story from '../models/story-model';
 import User from '../models/user-model';
 import { BadRequestError } from '../helpers/error-helper';
 
+export const getNewStories = async (ctx: Context): Promise<void> => {
+  ctx.body = await Story.query().modify('orderByNew');
+};
+
 export const getPopularStories = async (ctx: Context): Promise<void> => {
   ctx.body = await Story.query().modify('orderByPopularity');
 };

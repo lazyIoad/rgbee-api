@@ -2,6 +2,7 @@ import Router from 'koa-router';
 import { DefaultState, Context } from 'koa';
 import authenticated from '../utils/auth-util';
 import {
+  getNewStories,
   getPopularStories,
   getStoryById,
   postCreateStory,
@@ -25,6 +26,7 @@ const router = new Router<DefaultState, Context>({
 
 router.get('/', getPopularStories);
 router.post('/', authenticated(), postCreateStory);
+router.get('/new', getNewStories);
 router.get('/:storyId', getStoryById);
 router.post('/:storyId/upvote', authenticated(), postUpvoteStory);
 router.post('/:storyId/downvote', authenticated(), postDownvoteStory);
