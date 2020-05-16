@@ -84,7 +84,7 @@ export default class Comment extends Model {
   static get modifiers(): Modifiers {
     return {
       orderByKarma(builder: AnyQueryBuilder): void {
-        builder.orderByRaw('num_upvotes + num_downvotes DESC, created_at DESC');
+        builder.orderByRaw('num_upvotes - num_downvotes DESC, created_at DESC');
       },
     };
   }
