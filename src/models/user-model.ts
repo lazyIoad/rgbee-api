@@ -1,5 +1,5 @@
 import argon2 from 'argon2';
-import { Model, JSONSchema, RelationMappings } from 'objection';
+import { Model, JSONSchema, RelationMappings, Modifiers, AnyQueryBuilder } from 'objection';
 // eslint-disable-next-line import/no-cycle
 import Comment from './comment-model';
 // eslint-disable-next-line import/no-cycle
@@ -133,6 +133,25 @@ export default class User extends Model {
           },
           to: 'comments.id',
         },
+      },
+    };
+  }
+
+  static get modifiers(): Modifiers {
+    return {
+      selectDefaultFields(builder: AnyQueryBuilder): void {
+        builder.select('username', 'about', 'submissionKarma', 'commentKarma', 'createdAt');
+      },
+
+      selectSelfFields(builder: AnyQueryBuilder): void {
+        builder.select(
+          'username',
+          'email',
+          'about',
+          'submissionKarma',
+          'commentKarma',
+          'createdAt',
+        );
       },
     };
   }

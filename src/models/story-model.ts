@@ -72,6 +72,14 @@ export default class Story extends Model {
           'popular_ranking(greatest(num_upvotes - num_downvotes - 1, 0), created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',
         );
       },
+
+      selectDefaultFields(builder: AnyQueryBuilder): void {
+        builder.select('title', 'url', 'body', 'createdAt');
+      },
+
+      selectListFields(builder: AnyQueryBuilder): void {
+        builder.select('title', 'url', 'body', 'numComments', 'createdAt');
+      },
     };
   }
 }
