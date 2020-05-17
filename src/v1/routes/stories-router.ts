@@ -1,6 +1,6 @@
-import Router from 'koa-router';
+import Router from '@koa/router';
 import { DefaultState, Context } from 'koa';
-import authenticated from '../utils/auth-util';
+import authenticated from '../../utils/auth-util';
 import {
   getNewStories,
   getPopularStories,

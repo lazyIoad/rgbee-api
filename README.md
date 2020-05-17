@@ -101,7 +101,7 @@ Join through table between users and comments indicating a save relationship.
 
 ## Functions
 
-# recentness -> integer
+### recentness -> integer
 Returns the number of hours between two timestamps, rounded down.
 
 | Argument     | Type      | Notes                           |
@@ -109,7 +109,7 @@ Returns the number of hours between two timestamps, rounded down.
 | entity_stamp | TIMESTAMP | Timestamp of entity creation    |
 | sys_stamp    | TIMESTAMP | Timestamp of curent system time |
 
-# popular_ranking -> numeric
+### popular_ranking -> numeric
 Returns the ranking of a votable according to this formula: (score) / (recentness(entity_stamp, sys_stamp) + time_offset) ^ gravity.
 
 | Argument     | Type      | Notes                                                                                                |

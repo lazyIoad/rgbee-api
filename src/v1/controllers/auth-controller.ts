@@ -1,7 +1,7 @@
 import { Context, Next } from 'koa';
 import passport from 'koa-passport';
 import { DataError } from 'objection';
-import { UnauthorizedError } from '../helpers/error-helper';
+import { UnauthorizedError } from '../../helpers/error-helper';
 import User from '../models/user-model';
 
 const handleLogin = (ctx: Context, next: Next): Promise<void> => {

@@ -1,4 +1,4 @@
-import Router from 'koa-router';
+import Router from '@koa/router';
 import { DefaultState, Context } from 'koa';
 import { getSavedStories, getSavedComments, getUser } from '../controllers/users-controller';
 

@@ -1,4 +1,4 @@
-import Koa from 'koa';
+import Koa, { DefaultState, Context } from 'koa';
 import Knex from 'knex';
 import morgan from 'koa-morgan';
 import helmet from 'koa-helmet';
@@ -7,12 +7,11 @@ import session from 'koa-session';
 import passport from 'koa-passport';
 import { Model } from 'objection';
 import './configs/passport-config';
-import authRouter from './routes/auth-router';
-import usersRouter from './routes/users-router';
-import storiesRouter from './routes/stories-router';
+import Router from '@koa/router';
 import errorHandler from './helpers/error-helper';
 import { loggerStream } from './helpers/logger-helper';
 import { SESSION_SECRET } from './utils/secrets-util';
+import v1Router from './v1/routes/v1-router';
 
 // knexfile does not support ES6 modules, so we need to require it
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -44,8 +43,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.use(authRouter);
-app.use(usersRouter);
-app.use(storiesRouter);
+const apiRouter = new Router<DefaultState, Context>({
+  prefix: '/api',
+});
+
+apiRouter.use(v1Router);
+
+app.use(apiRouter.routes());
 
 export default app;
