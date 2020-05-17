@@ -2,16 +2,12 @@ import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const createUsersTableQuery = `CREATE TABLE users (
-    id               BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id               INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email            TEXT UNIQUE NOT NULL CHECK (CHAR_LENGTH(email) <= 200),
     username         TEXT UNIQUE NOT NULL CHECK (CHAR_LENGTH(username) <= 20),
     password         TEXT NOT NULL,
-    about            TEXT CHECK (CHAR_LENGTH(about) <= 400),
-    submission_karma INTEGER NOT NULL DEFAULT 0 CHECK (submission_karma >= 0),
-    comment_karma    INTEGER NOT NULL DEFAULT 0 CHECK (comment_karma >= 0),
-    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  )`;
+    about            TEXT CHECK (CHAR_LENGTH(about) <= 400)
+  ) INHERITS (entities)`;
 
   return knex.raw(createUsersTableQuery);
 }

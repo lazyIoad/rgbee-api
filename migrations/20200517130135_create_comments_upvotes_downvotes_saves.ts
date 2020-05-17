@@ -2,20 +2,20 @@ import * as Knex from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   const createTablesQuery = `CREATE TABLE comments_upvotes (
-    user_id    BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    comment_id BIGINT REFERENCES comments(id) ON UPDATE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    comment_id INTEGER NOT NULL REFERENCES comments(id) ON UPDATE CASCADE ON DELETE CASCADE,
                PRIMARY KEY (user_id, comment_id)
   );
 
   CREATE TABLE comments_downvotes (
-    user_id    BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    comment_id BIGINT REFERENCES comments(id) ON UPDATE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    comment_id INTEGER NOT NULL REFERENCES comments(id) ON UPDATE CASCADE ON DELETE CASCADE,
                PRIMARY KEY (user_id, comment_id)
   );
 
   CREATE TABLE comments_saves (
-    user_id    BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    comment_id BIGINT REFERENCES comments(id) ON UPDATE CASCADE,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    comment_id INTEGER NOT NULL REFERENCES comments(id) ON UPDATE CASCADE ON DELETE CASCADE,
                PRIMARY KEY (user_id, comment_id)
   );`;
 
