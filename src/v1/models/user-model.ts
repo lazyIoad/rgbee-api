@@ -1,9 +1,18 @@
 import argon2 from 'argon2';
-import { Model, JSONSchema, RelationMappings, Modifiers, AnyQueryBuilder } from 'objection';
+import {
+  Model,
+  RelationMappings,
+  Modifiers,
+  AnyQueryBuilder,
+  Validator,
+  QueryContext,
+  DataError,
+} from 'objection';
 // eslint-disable-next-line import/no-cycle
 import Comment from './comment-model';
 // eslint-disable-next-line import/no-cycle
 import Story from './story-model';
+import UserValidator from '../validators/user-validator';
 
 export default class User extends Model {
   id!: number;
@@ -34,30 +43,17 @@ export default class User extends Model {
     });
   }
 
-  static async generatePasswordHash(password: string): Promise<string> {
-    return argon2.hash(password, { type: argon2.argon2i });
+  async $beforeInsert(queryContext: QueryContext): Promise<void> {
+    await super.$beforeInsert(queryContext);
+    this.password = await argon2.hash(this.password, { type: argon2.argon2i });
   }
 
   static get tableName(): string {
     return 'users';
   }
 
-  static get jsonSchema(): JSONSchema {
-    return {
-      type: 'object',
-      required: ['email', 'username', 'password'],
-
-      properties: {
-        email: { type: 'string', format: 'email', maxLength: 200 },
-        username: {
-          type: 'string',
-          minLength: 1,
-          maxLength: 20,
-          pattern: '[a-zA-Z_][a-zA-Z0-9_]*',
-        },
-        about: { type: 'string', maxLength: 400 },
-      },
-    };
+  static createValidator(): Validator {
+    return new UserValidator();
   }
 
   static get relationMappings(): RelationMappings {
@@ -140,18 +136,19 @@ export default class User extends Model {
   static get modifiers(): Modifiers {
     return {
       selectDefaultFields(builder: AnyQueryBuilder): void {
-        builder.select('username', 'about', 'submissionKarma', 'commentKarma', 'createdAt');
+        builder
+          .select('username', 'about', 'submissionKarma', 'commentKarma', 'createdAt')
+          .catch((err) => {
+            throw new DataError(err);
+          });
       },
 
       selectSelfFields(builder: AnyQueryBuilder): void {
-        builder.select(
-          'username',
-          'email',
-          'about',
-          'submissionKarma',
-          'commentKarma',
-          'createdAt',
-        );
+        builder
+          .select('username', 'email', 'about', 'submissionKarma', 'commentKarma', 'createdAt')
+          .catch((err) => {
+            throw new DataError(err);
+          });
       },
     };
   }

@@ -1,7 +1,7 @@
 import { Context } from 'koa';
 import Comment from '../models/comment-model';
 import User from '../models/user-model';
-import { BadRequestError } from '../helpers/error-helper';
+import { BadRequestError } from '../../helpers/error-helper';
 import Story from '../models/story-model';
 
 export const getCommentById = async (ctx: Context): Promise<void> => {
@@ -58,7 +58,6 @@ export const postUpvoteComment = async (ctx: Context): Promise<void> => {
 
   const numModified = await Comment.transaction(async (trx) => {
     const upvotedComments = User.relatedQuery('upvotedComments', trx).for(ctx.state.user.id);
-    const comment = Comment.query(trx).findById(commentId);
 
     // Check if existing downvote for this comment exists
     const downvote = await User.relatedQuery('downvotedComments', trx)
@@ -72,11 +71,9 @@ export const postUpvoteComment = async (ctx: Context): Promise<void> => {
 
     if (undo) {
       await upvotedComments.unrelate().where('comments.id', commentId);
-      return comment.decrement('numUpvotes', 1);
+    } else {
+      await upvotedComments.relate(commentId);
     }
-
-    await upvotedComments.relate(commentId);
-    return comment.increment('numUpvotes', 1);
   });
 
   ctx.body = numModified;
@@ -88,7 +85,6 @@ export const postDownvoteComment = async (ctx: Context): Promise<void> => {
 
   const numModified = await Comment.transaction(async (trx) => {
     const downvotedComments = User.relatedQuery('downvotedComments', trx).for(ctx.state.user.id);
-    const comment = Comment.query(trx).findById(commentId);
 
     // Check if existing upvote for this comment exists
     const upvote = await User.relatedQuery('upvotedComments', trx)
@@ -102,11 +98,9 @@ export const postDownvoteComment = async (ctx: Context): Promise<void> => {
 
     if (undo) {
       await downvotedComments.unrelate().where('comments.id', commentId);
-      return comment.decrement('numDownvotes', 1);
+    } else {
+      await downvotedComments.relate(commentId);
     }
-
-    await downvotedComments.relate(commentId);
-    return comment.increment('numDownvotes', 1);
   });
 
   ctx.body = numModified;

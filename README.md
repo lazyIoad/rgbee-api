@@ -1,3 +1,52 @@
+## API V1
+
+### /api/v1/auth/register
+Register a new user
+
+Parameters:
+- `email`: Email address for the user: max 200 characters, must be unique
+- `username`: Username for the user: 1-20 characters must be unique
+- `password`: Password for the user
+
+Returns:
+- `200`
+- `400` (validation failed):
+```js
+{
+  "message": "Validation failed.",
+  "type": "VALIDATION_ERROR",
+  "errors": [
+    {
+      "field": "password",
+      "messages": [
+        "Field is a required property"
+      ]
+    },
+    {
+      "field": "email",
+      "messages": [
+        "Field is a required property"
+      ]
+    }
+  ]
+}
+```
+
+```js
+{
+  "message": "Validation failed.",
+  "type": "VALIDATION_ERROR",
+  "errors": [
+    {
+      "field": "username",
+      "messages": [
+        "Field should NOT be longer than 20 characters"
+      ]
+    }
+  ]
+}
+```
+
 ## Tables
 
 ### entities
@@ -10,21 +59,13 @@ Used as an abstract class for several user-created entities, such as stories and
 | deleted_at | TIMESTAMPTZ | May be null if entity not deleted |
 | is_deleted | BOOLEAN     | Not null, defaults to false       |
 
-### votables
-Used as an abstract class for entities that can be voted on, such as stories and comments.
-
-| Column        | Type    | Notes                                                |
-| ------------- | ------- | ---------------------------------------------------- |
-| num_upvotes   | INTEGER | Not null, defaults to 0, checks to make sure >= 0 |
-| num_downvotes | INTEGER | Not null, defaults to 0, checks to make sure >= 0 |
-
 ### users
 Stores all users. Inherits fields from entities table.
 
 | Column           | Type    | Notes                                                                       |
 | ---------------- | ------- | --------------------------------------------------------------------------- |
 | id               | INTEGER | Primary key, not null, generated always as identity, not exposed to clients |
-| email            | TEXT    | Unique, not null, checks to make sure length <= 200                         |
+| email            | TEXT    | Unique, not null, checks to make sure length <= 254                         |
 | username         | TEXT    | Unique, not null, checks to make sure length <= 20                          |
 | password         | TEXT    | Not null, contains argon 2i hash of password                                |
 | about            | TEXT    | Checks to make sure length <= 400                                           |
@@ -37,7 +78,7 @@ Stores all posts. Inherits fields from entities and votables tables.
 | id               | INTEGER | Primary key, not null, generated always as identity                         |
 | title            | TEXT    | Not null, checks to make sure length <= 100                                 |
 | url              | TEXT    | Checks to make sure length <= 2000, existence is mutually exclusive to body |
-| body             | TEXT    | Existence is mutually exclusive to url                                      |
+| body             | TEXT    | Existence is mutually exclusive to url, client validates length <= 4000     |
 | author_id        | INTEGER | Not null, references users(id), cascades update & delete                    |
 
 ### comments
@@ -46,7 +87,7 @@ Stores all comments on posts. Inherits fields from entities and votables tables.
 | Column           | Type    | Notes                                                                                                |
 | ---------------- | ------- | ---------------------------------------------------------------------------------------------------- |
 | id               | INTEGER | Primary key, not null, generated always as identity                                                  |
-| body             | TEXT    |                                                                                                      |
+| body             | TEXT    | Client validates presence if not container thread and length <= 4000                                 |
 | author_id        | INTEGER | Not null, references users(id), cascades update & delete                                             |
 | story_id         | INTEGER | Not null, references stories(id), cascades update                                                    |
 | parent_id        | INTEGER | References comments(id), cascades update, is null only when this is the container thread for a story |

@@ -7,7 +7,7 @@ export async function up(knex: Knex): Promise<void> {
     url          TEXT CHECK (CHAR_LENGTH(url) <= 2000),
     body         TEXT,
     author_id    INTEGER NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE
-  ) INHERITS (entities, votables)`;
+  ) INHERITS (entities)`;
 
   return knex.raw(createStoriesTableQuery);
 }

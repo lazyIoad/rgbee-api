@@ -6,7 +6,9 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:prettier/recommended",
-    "prettier/@typescript-eslint"
+    "prettier/@typescript-eslint",
+    "plugin:jest/recommended",
+    "plugin:jest/style"
   ],
   "parserOptions": {
     "ecmaVersion": 2019,
@@ -14,7 +16,8 @@
     "project": "./tsconfig.json"
   },
   "env": {
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
   "rules": {
     "radix": 0,
@@ -31,6 +34,7 @@
     ],
     "@typescript-eslint/no-unused-vars": 1,
     "@typescript-eslint/no-use-before-define": 1,
+    "@typescript-eslint/no-floating-promises": 2,
     "import/prefer-default-export": 1,
     "import/extensions": [
       "error",
@@ -47,8 +51,9 @@
     // Allows us to lint absolute imports within codebase
     "import/resolver": {
       "node": {
-        "moduleDirectory": ["node_modules", "src/"]
+        "moduleDirectory": ["node_modules", "src/", "test/"]
       }
     }
-  }
+  },
+  "plugins": ["jest"]
 }

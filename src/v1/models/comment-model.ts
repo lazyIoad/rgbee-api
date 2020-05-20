@@ -2,14 +2,15 @@ import {
   Model,
   AnyQueryBuilder,
   Modifiers,
-  JSONSchema,
   RelationMappings,
-  ValidationError,
+  DataError,
+  Validator,
 } from 'objection';
 // eslint-disable-next-line import/no-cycle
 import User from './user-model';
 // eslint-disable-next-line import/no-cycle
 import Story from './story-model';
+import CommentValidator from '../validators/comment-validator';
 
 export default class Comment extends Model {
   id!: number;
@@ -34,14 +35,8 @@ export default class Comment extends Model {
     return 'comments';
   }
 
-  static get jsonSchema(): JSONSchema {
-    return {
-      type: 'object',
-
-      properties: {
-        body: { type: 'string', maxLength: 4000 },
-      },
-    };
+  static createValidator(): Validator {
+    return new CommentValidator();
   }
 
   static get relationMappings(): RelationMappings {
@@ -84,24 +79,14 @@ export default class Comment extends Model {
   static get modifiers(): Modifiers {
     return {
       orderByKarma(builder: AnyQueryBuilder): void {
-        builder.orderByRaw('num_upvotes - num_downvotes DESC, created_at DESC');
+        builder
+          .orderByRaw(
+            'popular_ranking(greatest(num_upvotes - num_downvotes, 0), created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',
+          )
+          .catch((err) => {
+            throw new DataError(err);
+          });
       },
     };
-  }
-
-  $beforeInsert(): void {
-    // Validate body length if this comment isn't a story-thread.
-    if (this.parentId && (!this.body || this.body.length <= 0)) {
-      throw new ValidationError({
-        type: 'ModelValidation',
-        data: {
-          body: [
-            {
-              message: 'is a required property',
-            },
-          ],
-        },
-      });
-    }
   }
 }

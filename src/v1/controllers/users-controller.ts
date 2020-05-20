@@ -5,11 +5,11 @@ export const getUser = async (ctx: Context): Promise<void> => {
   const { username } = ctx.params;
   const userQuery = User.query().findOne({ username });
 
-  if (ctx.isAuthenticated() && ctx.state.user.username === username) {
-    userQuery.modify('selectSelfFields');
-  } else {
-    userQuery.modify('selectDefaultFields');
-  }
+  // if (ctx.isAuthenticated() && ctx.state.user.username === username) {
+  //   userQuery.modify('selectSelfFields');
+  // } else {
+  //   userQuery.modify('selectDefaultFields');
+  // }
 
   ctx.body = await userQuery;
 };

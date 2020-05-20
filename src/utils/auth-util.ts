@@ -1,4 +1,5 @@
 import { Context, Next } from 'koa';
+import { UnauthorizedError } from '../helpers/error-helper';
 
 export default () => {
   return (ctx: Context, next: Next): Promise<unknown> => {
@@ -6,6 +7,6 @@ export default () => {
       return next();
     }
 
-    ctx.throw(401);
+    throw new UnauthorizedError();
   };
 };

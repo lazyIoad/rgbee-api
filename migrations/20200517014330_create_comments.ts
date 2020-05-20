@@ -7,7 +7,7 @@ export async function up(knex: Knex): Promise<void> {
     author_id INTEGER NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
     story_id  INTEGER NOT NULL REFERENCES stories(id) ON UPDATE CASCADE,
     parent_id INTEGER REFERENCES comments(id) ON UPDATE CASCADE
-  ) INHERITS (entities, votables)`;
+  ) INHERITS (entities)`;
 
   return knex.raw(createCommentsTableQuery);
 }

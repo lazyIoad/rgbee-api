@@ -1,8 +1,16 @@
-import { Model, JSONSchema, RelationMappings, Modifiers, AnyQueryBuilder } from 'objection';
+import {
+  Model,
+  RelationMappings,
+  Modifiers,
+  AnyQueryBuilder,
+  DataError,
+  Validator,
+} from 'objection';
 // eslint-disable-next-line import/no-cycle
 import Comment from './comment-model';
 // eslint-disable-next-line import/no-cycle
 import User from './user-model';
+import StoryValidator from '../validators/story-validator';
 
 export default class Story extends Model {
   id!: number;
@@ -23,21 +31,8 @@ export default class Story extends Model {
     return 'stories';
   }
 
-  static get jsonSchema(): JSONSchema {
-    return {
-      type: 'object',
-      required: ['title'],
-
-      properties: {
-        title: { type: 'string', maxLength: 100 },
-        url: {
-          type: 'string',
-          maxLength: 2000,
-          format: 'hostname',
-        },
-        body: { type: 'string', maxLength: 4000 },
-      },
-    };
+  static createValidator(): Validator {
+    return new StoryValidator();
   }
 
   static get relationMappings(): RelationMappings {
@@ -64,21 +59,31 @@ export default class Story extends Model {
   static get modifiers(): Modifiers {
     return {
       orderByNew(builder: AnyQueryBuilder): void {
-        builder.orderByRaw('created_at DESC');
+        builder.orderByRaw('created_at DESC').catch((err) => {
+          throw new DataError(err);
+        });
       },
 
       orderByPopularity(builder: AnyQueryBuilder): void {
-        builder.orderByRaw(
-          'popular_ranking(greatest(num_upvotes - num_downvotes - 1, 0), created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',
-        );
+        builder
+          .orderByRaw(
+            'popular_ranking(greatest(num_upvotes - num_downvotes, 0), created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',
+          )
+          .catch((err) => {
+            throw new DataError(err);
+          });
       },
 
       selectDefaultFields(builder: AnyQueryBuilder): void {
-        builder.select('title', 'url', 'body', 'createdAt');
+        builder.select('title', 'url', 'body', 'createdAt').catch((err) => {
+          throw new DataError(err);
+        });
       },
 
       selectListFields(builder: AnyQueryBuilder): void {
-        builder.select('title', 'url', 'body', 'numComments', 'createdAt');
+        builder.select('title', 'url', 'body', 'numComments', 'createdAt').catch((err) => {
+          throw new DataError(err);
+        });
       },
     };
   }

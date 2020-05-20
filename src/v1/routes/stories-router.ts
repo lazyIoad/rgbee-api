@@ -20,9 +20,7 @@ import {
   postSaveComment,
 } from '../controllers/comments-controller';
 
-const router = new Router<DefaultState, Context>({
-  prefix: '/api/v1/stories',
-});
+const router = new Router<DefaultState, Context>();
 
 router.get('/', getPopularStories);
 router.post('/', authenticated(), postCreateStory);
