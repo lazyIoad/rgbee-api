@@ -46,8 +46,13 @@ export const postCreateStory = async (ctx: Context): Promise<void> => {
     });
 
     // Create a default upvote from this user to their story
-    await User.relatedQuery('upvotedStories', trx).for(ctx.state.user.id).relate(insertedStory.id);
-    return insertedStory;
+    await User.relatedQuery('upvotedStories', trx)
+      .for(ctx.state.user.id)
+      .relate(insertedStory.id)
+      .throwIfNotFound();
+    return {
+      id: insertedStory.id,
+    };
   });
 
   ctx.body = story;
@@ -60,7 +65,10 @@ export const postCreateStory = async (ctx: Context): Promise<void> => {
  */
 export const getStoryById = async (ctx: Context): Promise<void> => {
   const { storyId } = ctx.params;
-  const story = await Story.query().findById(storyId);
+  const story = await Story.query()
+    .findById(storyId)
+    .throwIfNotFound()
+    .modify('selectDefaultFields');
   ctx.body = story;
 };
 
@@ -73,7 +81,7 @@ export const postUpvoteStory = async (ctx: Context): Promise<void> => {
   const { storyId } = ctx.params;
   const { undo } = ctx.request.body;
 
-  const numModified = await Story.transaction(async (trx) => {
+  await Story.transaction(async (trx) => {
     const upvotedStories = User.relatedQuery('upvotedStories', trx).for(ctx.state.user.id);
 
     // Check if existing downvote for this story exists
@@ -89,18 +97,18 @@ export const postUpvoteStory = async (ctx: Context): Promise<void> => {
     if (undo) {
       await upvotedStories.unrelate().where('stories.id', storyId);
     } else {
-      return upvotedStories.relate(storyId);
+      await upvotedStories.relate(storyId);
     }
   });
 
-  ctx.body = numModified;
+  ctx.status = 200;
 };
 
 export const postDownvoteStory = async (ctx: Context): Promise<void> => {
   const { storyId } = ctx.params;
   const { undo } = ctx.request.body;
 
-  const numModified = await Story.transaction(async (trx) => {
+  await Story.transaction(async (trx) => {
     const downvotedStories = User.relatedQuery('downvotedStories').for(ctx.state.user.id);
 
     // Check if existing upvote for this story exists
@@ -120,7 +128,7 @@ export const postDownvoteStory = async (ctx: Context): Promise<void> => {
     }
   });
 
-  ctx.body = numModified;
+  ctx.status = 200;
 };
 
 export const postSaveStory = async (ctx: Context): Promise<void> => {
@@ -128,9 +136,12 @@ export const postSaveStory = async (ctx: Context): Promise<void> => {
   const { undo } = ctx.request.body;
 
   const savedStories = User.relatedQuery('savedStories').for(ctx.state.user.id);
-  const numModified = undo
-    ? await savedStories.relate(storyId)
-    : await savedStories.unrelate().where('stories.id', storyId);
 
-  ctx.body = numModified;
+  if (undo) {
+    await savedStories.unrelate().where('stories.id', storyId);
+  } else {
+    await savedStories.relate(storyId);
+  }
+
+  ctx.body = 200;
 };

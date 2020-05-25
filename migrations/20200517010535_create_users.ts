@@ -6,7 +6,8 @@ export async function up(knex: Knex): Promise<void> {
     email            TEXT UNIQUE NOT NULL CHECK (CHAR_LENGTH(email) <= 254),
     username         TEXT UNIQUE NOT NULL CHECK (CHAR_LENGTH(username) <= 20),
     password         TEXT NOT NULL,
-    about            TEXT CHECK (CHAR_LENGTH(about) <= 400)
+    about            TEXT CHECK (CHAR_LENGTH(about) <= 400),
+    is_verified      BOOLEAN NOT NULL DEFAULT FALSE
   ) INHERITS (entities)`;
 
   return knex.raw(createUsersTableQuery);

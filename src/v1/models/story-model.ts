@@ -67,7 +67,7 @@ export default class Story extends Model {
       orderByPopularity(builder: AnyQueryBuilder): void {
         builder
           .orderByRaw(
-            'popular_ranking(greatest(num_upvotes - num_downvotes, 0), created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',
+            'story_popularity(id, created_at::timestamp, now()::timestamp, 2, 1.8) DESC, created_at DESC',
           )
           .catch((err) => {
             throw new DataError(err);
@@ -81,9 +81,11 @@ export default class Story extends Model {
       },
 
       selectListFields(builder: AnyQueryBuilder): void {
-        builder.select('title', 'url', 'body', 'numComments', 'createdAt').catch((err) => {
-          throw new DataError(err);
-        });
+        builder
+          .select('title', 'url', 'body', 'story_num_comments(id)', 'createdAt')
+          .catch((err) => {
+            throw new DataError(err);
+          });
       },
     };
   }

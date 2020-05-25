@@ -7,7 +7,7 @@ export default class UserValidator extends Validator {
   static SCHEMA = Joi.object({
     email: Joi.string().email().required().messages({
       'string.email': 'Email is invalid',
-      'any.required': 'Email is required',
+      'any.required': 'Field is required',
     }),
 
     username: Joi.string()
@@ -17,13 +17,13 @@ export default class UserValidator extends Validator {
       .required()
       .messages({
         'string.pattern.base': 'Username is invalid',
-        'string.min': 'Username must be between 1-20 characters long',
-        'string.max': 'Username must be between 1-20 characters long',
-        'any.required': 'Username is required',
+        'string.min': 'Must be at least 1 character long',
+        'string.max': 'Must be at most 20 characters long',
+        'any.required': 'Field is required',
       }),
 
     about: Joi.string().max(400).messages({
-      'string.max': 'About cannot be longer than 400 characters',
+      'string.max': 'Must be at most 400 characters long',
     }),
 
     password: Joi.string()

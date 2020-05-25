@@ -9,6 +9,7 @@ passport.serializeUser((user: User, done): void => {
 passport.deserializeUser((id: number, done): void => {
   User.query()
     .findById(id)
+    .throwIfNotFound()
     .then((user) => {
       done(null, user);
     })
@@ -21,6 +22,7 @@ passport.use(
   new LocalStrategy((username, password, done) => {
     User.query()
       .findOne({ username: username.trim() })
+      .throwIfNotFound()
       .then(async (user) => {
         if (!user) {
           return done(null, false);

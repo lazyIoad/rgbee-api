@@ -8,6 +8,7 @@ export const getCommentById = async (ctx: Context): Promise<void> => {
   const { commentId } = ctx.params;
   const comment = await Comment.query()
     .findById(commentId)
+    .throwIfNotFound()
     .withGraphFetched('[children(orderByKarma).^]');
   ctx.body = comment;
 };
@@ -16,6 +17,7 @@ export const getStoryComments = async (ctx: Context): Promise<void> => {
   const { storyId } = ctx.params;
   const thread = await Comment.query()
     .findOne({ storyId })
+    .throwIfNotFound()
     .withGraphFetched('[children(orderByKarma).^]');
   ctx.body = thread;
 };
@@ -27,7 +29,7 @@ const createComment = (
   parentId: number,
 ): Promise<Comment> => {
   return Comment.transaction(async (trx) => {
-    await Story.query(trx).findById(storyId).increment('numComments', 1);
+    await Story.query(trx).findById(storyId).throwIfNotFound().increment('numComments', 1);
     return Comment.query(trx).insert({
       body,
       storyId,
@@ -40,7 +42,7 @@ const createComment = (
 export const postCreateComment = async (ctx: Context): Promise<void> => {
   const { body } = ctx.request.body;
   const { storyId } = ctx.params;
-  const thread = await Comment.query().findOne({ storyId });
+  const thread = await Comment.query().findOne({ storyId }).throwIfNotFound();
   const comment = await createComment(body, storyId, ctx.state.user.id, thread.id);
   ctx.body = comment;
 };

@@ -9,6 +9,7 @@ import { Model } from 'objection';
 import './configs/passport-config';
 import Router from '@koa/router';
 import errorHandler from './helpers/error-helper';
+import sessionConfig from './configs/session-config';
 import { loggerStream } from './helpers/logger-helper';
 import { SESSION_SECRET } from './utils/secrets-util';
 import v1Router from './v1/routes/v1-router';
@@ -24,7 +25,7 @@ const app = new Koa();
 
 // Session store
 app.keys = [SESSION_SECRET || 'very secret'];
-app.use(session(app));
+app.use(session(sessionConfig, app));
 
 // Security
 app.use(helmet());

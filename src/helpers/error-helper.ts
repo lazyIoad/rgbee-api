@@ -128,7 +128,7 @@ const errorHelper = (err: Error, ctx: Context): void => {
     ctx.status = 401;
     ctx.body = {
       type: ERROR_TYPES.AUTHENTICATION_ERROR,
-      message: err.message || 'Unauthorized access.gcxccccccccccccccccccccccccccccccccccccc',
+      message: err.message || 'Unauthorized access.',
     };
   } else {
     ctx.status = 500;

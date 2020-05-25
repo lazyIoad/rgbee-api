@@ -4,18 +4,19 @@ import { extractValidationErrors } from '../../helpers/error-helper';
 
 export default class StoryValidator extends Validator {
   static SCHEMA = Joi.object({
-    title: Joi.string().max(100).required().messages({
-      'string.max': 'Title cannot be longer than 100 characters',
-      'any.required': 'Title is required',
+    title: Joi.string().min(5).max(100).required().messages({
+      'string.min': 'Must be at least 5 characters long',
+      'string.max': 'Must be at most 100 characters long',
+      'any.required': 'Field is required',
     }),
 
     url: Joi.string().uri().max(2000).messages({
       'string.uri': 'URL is invalid',
-      'string.max': 'URL cannot be longer than 2000 characters',
+      'string.max': 'Must be at most 2000 characters long',
     }),
 
     body: Joi.string().max(4000).messages({
-      'string.max': 'Text cannot be longer than 4000 characters',
+      'string.max': 'Must be at most 4000 characters long',
     }),
   })
     .oxor('url', 'body')

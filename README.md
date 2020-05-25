@@ -1,49 +1,113 @@
+# rgbee
+Some dumb fun
+
 ## API V1
 
-### /api/v1/auth/register
+### auth
+
+#### POST /api/v1/auth/register
 Register a new user
 
 Parameters:
-- `email`: Email address for the user: max 200 characters, must be unique
-- `username`: Username for the user: 1-20 characters must be unique
-- `password`: Password for the user
+- `email` (required): Email address for the user: must be unique
+- `username` (required): Username for the user: 1-20 characters, must match regex `[a-zA-Z_][a-zA-Z0-9_]*$`, must be unique
+- `password` (required): Password for the user
+- `about` (optional): Text description for the user, must be fewer than 400 characters
 
 Returns:
 - `200`
-- `400` (validation failed):
-```js
+- `400` (validation failed)
+#### POST /api/v1/auth/login
+
+Login a user. Sets the `rgbee.sess` and `rgbee.sess.sig` cookies to authenticate follow up requests.
+
+Parameters:
+
+- `username` (required): Username of the user
+- `password` (required): Password of the user
+
+Returns:
+
+- `200`
+- `401`
+
+#### POST /api/v1/auth/logout
+
+Logs out a user. Requires authentication.
+
+Returns:
+
+- `200`
+
+### users
+
+#### GET /api/v1/users/me
+
+Gets the current user. Requires authentication.
+
+Returns:
+- `200`
+
+```json
 {
-  "message": "Validation failed.",
-  "type": "VALIDATION_ERROR",
-  "errors": [
-    {
-      "field": "password",
-      "messages": [
-        "Field is a required property"
-      ]
-    },
-    {
-      "field": "email",
-      "messages": [
-        "Field is a required property"
-      ]
-    }
-  ]
+  "username": "areebk",
+  "email": "areebk@protonmail.com",
+  "about": null,
+  "createdAt": "2020-05-24T16:15:19.699Z"
 }
 ```
 
-```js
+#### GET /api/v1/users/:username
+
+Gets another user's profile. Doesn't include `email` field for privacy.
+
+Returns:
+
+- `200`
+
+```json
 {
-  "message": "Validation failed.",
-  "type": "VALIDATION_ERROR",
-  "errors": [
-    {
-      "field": "username",
-      "messages": [
-        "Field should NOT be longer than 20 characters"
-      ]
-    }
-  ]
+  "username": "areebk",
+  "about": null,
+  "createdAt": "2020-05-24T16:15:19.699Z"
+}
+```
+
+#### GET /api/v1/users/:username/savedStories
+
+#### GET /api/v1/users/:username/savedComments
+
+### stories
+
+#### GET /api/v1/stories/
+
+Gets a list of stories ordered by popularity.
+
+#### POST /api/v1/stories/
+
+Creates a new story, its top level container comment thread, and an automatic upvote from the author to the story. Requires authentication.
+
+Parameters:
+
+- `title` (required): Title for the post: must be 5-100 characters long
+- `url`: URL pointer: must be a valid link and <= 2000 characters long, and is mutually exclusive with `body`.
+- `body`: Text body for the post: must be at least 4000 characters long, and is mutually exclusive with `url`.
+
+Returns:
+
+- `200` (for link)
+
+```
+{
+  "title": "test link story 1",
+  "url": "http://go.co",
+  "thread": {
+    "authorId": 1,
+    "storyId": 1,
+    "id": 1
+  },
+  "authorId": 1,
+  "id": 1
 }
 ```
 
@@ -62,13 +126,14 @@ Used as an abstract class for several user-created entities, such as stories and
 ### users
 Stores all users. Inherits fields from entities table.
 
-| Column           | Type    | Notes                                                                       |
-| ---------------- | ------- | --------------------------------------------------------------------------- |
-| id               | INTEGER | Primary key, not null, generated always as identity, not exposed to clients |
-| email            | TEXT    | Unique, not null, checks to make sure length <= 254                         |
-| username         | TEXT    | Unique, not null, checks to make sure length <= 20                          |
-| password         | TEXT    | Not null, contains argon 2i hash of password                                |
-| about            | TEXT    | Checks to make sure length <= 400                                           |
+| Column      | Type    | Notes                                                        |
+| ----------- | ------- | ------------------------------------------------------------ |
+| id          | INTEGER | Primary key, not null, generated always as identity, not exposed to clients |
+| email       | TEXT    | Unique, not null, checks to make sure length <= 254          |
+| username    | TEXT    | Unique, not null, checks to make sure length <= 20           |
+| password    | TEXT    | Not null, contains argon 2i hash of password                 |
+| about       | TEXT    | Checks to make sure length <= 400                            |
+| is_verified | BOOLEAN | Not null, defaults to false                                  |
 
 ### stories
 Stores all posts. Inherits fields from entities and votables tables.
@@ -149,14 +214,3 @@ Returns the number of hours between two timestamps, rounded down.
 | ------------ | --------- | ------------------------------- |
 | entity_stamp | TIMESTAMP | Timestamp of entity creation    |
 | sys_stamp    | TIMESTAMP | Timestamp of curent system time |
-
-### popular_ranking -> numeric
-Returns the ranking of a votable according to this formula: (score) / (recentness(entity_stamp, sys_stamp) + time_offset) ^ gravity.
-
-| Argument     | Type      | Notes                                                                                                |
-| ------------ | --------- | ---------------------------------------------------------------------------------------------------- |
-| score        | INTEGER   | Primary key, not null, generated always as identity                                                  |
-| entity_stamp | TIMESTAMP |                                                                                                      |
-| sys_stamp    | TIMESTAMP | Not null, references users(id), cascades update & delete                                             |
-| time_offset  | INTEGER   | Not null, references stories(id), cascades update                                                    |
-| gravity      | NUMERIC   | References comments(id), cascades update, is null only when this is the container thread for a story |

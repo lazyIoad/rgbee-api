@@ -136,19 +136,15 @@ export default class User extends Model {
   static get modifiers(): Modifiers {
     return {
       selectDefaultFields(builder: AnyQueryBuilder): void {
-        builder
-          .select('username', 'about', 'submissionKarma', 'commentKarma', 'createdAt')
-          .catch((err) => {
-            throw new DataError(err);
-          });
+        builder.select('username', 'email', 'about', 'isVerified', 'createdAt').catch((err) => {
+          throw new DataError(err);
+        });
       },
 
-      selectSelfFields(builder: AnyQueryBuilder): void {
-        builder
-          .select('username', 'email', 'about', 'submissionKarma', 'commentKarma', 'createdAt')
-          .catch((err) => {
-            throw new DataError(err);
-          });
+      selectProfileFields(builder: AnyQueryBuilder): void {
+        builder.select('username', 'about', 'createdAt').catch((err) => {
+          throw new DataError(err);
+        });
       },
     };
   }
